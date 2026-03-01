@@ -1292,8 +1292,12 @@ def order_success(order_id):
         return "Order not found", 404
 
     items = []
+
     if order["items"]:
-        items = json.loads(order["items"])
+        if isinstance(order["items"], str):
+            items = json.loads(order["items"])
+        else:
+            items = order["items"]
 
     return render_template(
         "order_success.html",
