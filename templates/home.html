@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}QualyJoyn | Premium Streetwear{% endblock %}
+
+{% block content %}
+
+<!-- HERO SECTION -->
+<section class="hero">
+
+  <div class="hero-slider">
+
+    <div class="hero-slide active">
+      <img src="{{ url_for('static', filename='images/hero1.jpg') }}">
+      <div class="hero-content">
+        <h1>Crafted for Modern Street</h1>
+        <p>Premium streetwear designed with precision and attitude.</p>
+        <a href="/category/tshirts" class="hero-btn">Shop Now</a>
+      </div>
+    </div>
+
+    <div class="hero-slide">
+      <img src="{{ url_for('static', filename='images/hero2.jpg') }}">
+      <div class="hero-content">
+        <h1>Minimal. Bold. Timeless.</h1>
+        <p>Redefine your everyday essentials.</p>
+        <a href="/category/tshirts" class="hero-btn">Explore Collection</a>
+      </div>
+    </div>
+
+    <div class="hero-slide">
+      <img src="{{ url_for('static', filename='images/hero3.jpg') }}">
+      <div class="hero-content">
+        <h1>Street Meets Luxury</h1>
+        <p>Built for confidence and comfort.</p>
+        <a href="/category/tshirts" class="hero-btn">Discover</a>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+  <!-- SHOP SECTION (ALWAYS PRESENT) -->
+  <!-- SHOP SECTION (ALWAYS PRESENT) -->
+  <section id="shop">
+
+    {% if products %}
+    <!-- SINGLE CATEGORY → SHOW PRODUCTS -->
+    <section class="category-products">
+      <div class="container">
+
+        <h2 class="section-title">Shop Now</h2>
+
+        <div class="product-grid">
+          {% for product in products %}
+            {% include "components/product-card.html" %}
+          {% endfor %}
+        </div>
+
+      </div>
+    </section>
+
+    {% endif %}
+
+    {% if categories %}
+    <!-- MULTIPLE CATEGORIES → SHOW CATEGORIES -->
+    <section class="categories-home">
+      <div class="container">
+
+        <h2 class="section-title">Shop by Category</h2>
+        
+      <div class="category-grid">
+        {% for category in categories %}
+          <a href="{{ url_for('category', slug=category.slug) }}"
+            class="category-card">
+
+            <div class="category-image-wrapper">
+              <img
+                src="{{ url_for('static', filename='images/categories/' ~ category.image) }}"
+                alt="{{ category.name }}"
+                class="category-image">
+            </div>
+
+            <h3>{{ category.name }}</h3>
+
+          </a>
+
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+  </section>
+
+
+<!-- WHY QUALYJOYN -->
+<section class="usp">
+  <div class="usp-grid">
+    <div class="usp-item">
+      <h4>Premium Fabrics</h4>
+      <p>Export-quality materials selected for comfort, durability, and finish.</p>
+    </div>
+
+    <div class="usp-item">
+      <h4>Modern Fits</h4>
+      <p>Designed for contemporary streetwear silhouettes and daily wear.</p>
+    </div>
+
+    <div class="usp-item">
+      <h4>Made with Purpose</h4>
+      <p>Every piece is crafted with intention, not mass-produced noise.</p>
+    </div>
+  </div>
+</section>
+
+<!-- BRAND STORY -->
+<section class="editorial" id="about">
+  <h2>Built with purpose.<br>Worn with confidence.</h2>
+  <p>
+    QualyJoyn blends modern silhouettes with premium materials to create
+    streetwear that feels effortless and timeless.
+  </p>
+  <p>
+    Every piece is constructed using premium-grade fabrics,
+    carefully selected for durability, structure, and comfort.
+    We focus on modern silhouettes inspired by global street culture,
+    balanced with timeless minimal design.
+  </p>
+  <p>
+    Built to feel premium. Designed to last.
+    Made to be worn with confidence.
+  </p>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-strip" id="contact">
+  <div class="contact-item">
+    <span>Email</span>
+    <p>qualyjoyn@gmail.com</p>
+  </div>
+
+  <div class="contact-item">
+    <span>Phone</span>
+    <p>+91 9XXXXXXXXX</p>
+  </div>
+
+  <div class="contact-item">
+    <span>Location</span>
+    <p>India</p>
+  </div>
+</section>
+
+
+
+{% endblock %}

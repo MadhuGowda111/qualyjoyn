@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Order Detail | QualyJoyn{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+  <div class="admin-container">
+
+    <h1>Order Detail</h1>
+
+    <div class="order-summary-card">
+
+      <div class="order-row">
+        <span class="order-label">Order ID</span>
+        <span class="order-value highlight">{{ order.order_id }}</span>
+      </div>
+
+      <div class="order-row">
+        <span class="order-label">User ID</span>
+        <span class="order-value">{{ order.user_id }}</span>
+      </div>
+
+      <div class="order-row">
+        <span class="order-label">Total</span>
+        <span class="order-value price">Rs. {{ order.total }}</span>
+      </div>
+
+      <div class="order-row">
+        <span class="order-label">Date</span>
+        <span class="order-value">{{ order.created_at }}</span>
+      </div>
+
+    </div>
+
+
+    <h2 style="margin-top:40px;">Items</h2>
+
+    <div class="admin-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.size }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>Rs. {{ item.price }}</td>
+            <td>Rs. {{ item.price * item.quantity }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

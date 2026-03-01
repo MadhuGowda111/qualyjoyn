@@ -1,0 +1,103 @@
+    {% extends "base.html" %}
+    {% block title %}Your Cart | QualyJoyn{% endblock %}
+
+    {% block content %}
+    <section class="cart-page">
+      <h1>Your Cart</h1>
+
+      {% if cart_items %}
+        <div class="cart-list">
+
+          {% for item in cart_items %}
+          <div class="cart-item">
+
+            <img
+              src="{{ url_for('static', filename='images/products/' ~ item.product_id ~ '/' ~ item.image) }}"
+              alt="{{ item.name }}"
+              class="cart-image"
+            >
+
+            <div class="cart-info">
+              <h3>{{ item.name }}</h3>
+              <p>Size: {{ item.size }}</p>
+              <p>Price: Rs. {{ item.price }}</p>
+
+              <div class="qty-control">
+                <button type="button" onclick="updateQty('{{ item.key }}', 'dec')">−</button>
+                <span>{{ item.quantity }}</span>
+                <button type="button" onclick="updateQty('{{ item.key }}', 'inc')">+</button>
+              </div>
+
+
+              <p><strong>Subtotal: Rs. {{ item.subtotal }}</strong></p>
+            </div>
+
+            <!-- 🗑️ MOVE HERE -->
+            <button class="remove-btn" onclick="removeItem('{{ item.key }}')" title="Remove item">
+              🗑️
+            </button>
+
+          </div>
+
+          {% endfor %}
+
+        </div>
+
+        <div class="cart-summary">
+          <h2>Total: Rs. {{ total }}</h2>
+          <a href="/checkout" class="btn-checkout">Checkout</a>
+        </div>
+
+      {% else %}
+        <p>Your cart is empty.</p>
+      {% endif %}
+    </section>
+
+    {% endblock %}
+
+    {% block scripts %}
+
+
+    <script>
+    function removeItem(key) {
+      console.log("Removing key:", key);
+
+      fetch("/remove-from-cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: key })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        }
+      });
+    }
+    </script>
+
+    <script>
+    function updateQty(key, action) {
+
+      fetch("/update-cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          key: key,
+          action: action
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        }
+      });
+
+    }
+
+    </script>
+
+    {% endblock %}

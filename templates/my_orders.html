@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}My Orders | QualyJoyn{% endblock %}
+
+{% block content %}
+<section class="orders-page">
+
+  <div class="orders-container">
+    <h1 class="orders-title">My Orders</h1>
+
+    <!-- 👇 One-year info note -->
+    <p class="orders-note">
+      Showing orders from the last 12 months
+    </p>
+
+    {% if orders %}
+      <div class="orders-list">
+        {% for order in orders %}
+          <div class="order-card">
+
+            <div class="order-row">
+              <span class="order-label">Order ID</span>
+              <span class="order-value">{{ order.order_id }}</span>
+            </div>
+
+            <div class="order-row">
+              <span class="order-label">Total</span>
+              <span class="order-value">Rs. {{ order.total }}</span>
+            </div>
+
+            <div class="order-row">
+              <span class="order-label">Date</span>
+              <span class="order-value">
+                {{ order.created_at[:10] }}
+              </span>
+            </div>
+
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="orders-empty">
+        You haven’t placed any orders in the last 12 months.
+      </p>
+    {% endif %}
+  </div>
+
+</section>
+{% endblock %}

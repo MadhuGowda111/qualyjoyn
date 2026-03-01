@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Admin Orders | QualyJoyn{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+
+  <div class="admin-container">
+    <h1>All Orders</h1>
+
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>Email</th>
+          <th>Total</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for order in orders %}
+        <tr>
+
+          <!-- Order ID -->
+          <td>
+            <a href="/admin/order/{{ order.order_id }}">
+              {{ order.order_id }}
+            </a>
+          </td>
+
+          <!-- Customer -->
+          <td>{{ order.customer_name }}</td>
+
+          <!-- Email -->
+          <td>{{ order.email }}</td>
+
+          <!-- Total -->
+          <td>Rs. {{ order.total }}</td>
+
+          <!-- Date -->
+          <td>{{ order.created_at }}</td>
+
+          <!-- Status -->
+          <td>
+            {% if order.status == "open" %}
+              <span style="color: orange; font-weight: 600;">
+                Open
+              </span>
+            {% else %}
+              <span style="color: green; font-weight: 600;">
+                Closed
+              </span>
+            {% endif %}
+          </td>
+
+          <!-- Action Button -->
+          <td>
+            {% if order.status == "open" %}
+              <a href="{{ url_for('close_order', order_id=order.order_id) }}"
+                 style="
+                   padding:6px 12px;
+                   background:#000;
+                   color:#fff;
+                   text-decoration:none;
+                   font-size:12px;
+                   border-radius:4px;
+                 ">
+                Mark as Dispatched
+              </a>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+
+</section>
+{% endblock %}

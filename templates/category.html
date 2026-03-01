@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ category_title }} | QualyJoyn{% endblock %}
+
+{% block content %}
+
+<section class="category-section">
+
+  <div class="category-title-wrap">
+    <h1 class="category-title">{{ category_title }}</h1>
+  </div>
+
+  <div class="product-grid">
+    {% for product in products %}
+      {% set product = product %}
+      {% include "components/product-card.html" %}
+    {% endfor %}
+  </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Order Confirmed | QualyJoyn{% endblock %}
+
+{% block content %}
+<section class="order-success-page">
+
+  <div class="order-success-card">
+
+    <h1 class="success-title">
+      Thank you, {{ order.customer_name }} 🎉
+    </h1>
+
+    <p class="success-subtitle">
+      Your order has been placed successfully
+    </p>
+
+    <p class="order-id">
+      <strong>Order ID:</strong> {{ order.order_id }}
+    </p>
+
+    <hr>
+
+    <h3 class="summary-title">Order Summary</h3>
+
+    <ul class="summary-list">
+      {% for item in items %}
+      <li>
+        <span>
+          {{ item.name }} ({{ item.size }}) × {{ item.quantity }}
+        </span>
+        <span>
+          Rs. {{ item.price * item.quantity }}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <div class="summary-total">
+      <span>Total</span>
+      <span>Rs. {{ order.total }}</span>
+    </div>
+
+    <hr>
+
+    <p class="confirmation-text">
+      📧 Order confirmation has been sent to
+      <strong>{{ session.user_email }}</strong>
+    </p>
+
+    <a href="/" class="btn-continue">
+      Continue Shopping
+    </a>
+
+  </div>
+
+</section>
+{% endblock %}

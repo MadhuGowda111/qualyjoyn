@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Admin Products | QualyJoyn{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+  <div class="admin-container">
+
+    <div class="admin-header">
+      <h1>Manage Products</h1>
+      <a href="/admin/add-product" class="admin-btn">+ Add Product</a>
+    </div>
+
+    <div class="admin-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+          <tr>
+            <td>{{ product.id }}</td>
+            <td>{{ product.name }}</td>
+            <td>Rs. {{ product.price }}</td>
+            <td>{{ product.category }}</td>
+            <td>
+              <a href="/admin/delete-product/{{ product.id }}" class="delete-btn">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

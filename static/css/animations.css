@@ -1,0 +1,11 @@
+/* =========================
+   Hover micro-interaction
+   ========================= */
+
+.hover-rise {
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.hover-rise:hover {
+  transform: translateY(-6px);
+}

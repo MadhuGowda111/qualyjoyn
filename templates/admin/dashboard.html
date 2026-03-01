@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | QualyJoyn{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+  <div class="admin-container">
+    <h1>Admin Dashboard</h1>
+
+    <div class="admin-grid">
+
+      <a href="/admin/orders" class="admin-card-link">
+        <div class="admin-card">
+          <h3>Total Orders</h3>
+          <p>{{ total_orders }}</p>
+        </div>
+      </a>
+
+      <a href="/admin/products" class="admin-card-link">
+        <div class="admin-card">
+          <h3>Manage Products</h3>
+          <p>{{ total_products }}</p>
+        </div>
+      </a>
+
+      <a href="/admin/categories" class="admin-card-link">
+        <div class="admin-card">
+          <h3>Manage Categories</h3>
+          <p>{{ total_users }}</p>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+</section>
+
+{% endblock %}

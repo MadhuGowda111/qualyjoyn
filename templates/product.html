@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} | QualyJoyn{% endblock %}
+
+{% block content %}
+
+<!-- PRODUCT DETAIL -->
+<section class="pdp">
+
+  <div class="pdp-grid">
+
+    <!-- LEFT: IMAGE GALLERY -->
+    <div class="product-gallery">
+
+      {% if images %}
+      <div class="main-image">
+
+        <button class="gallery-arrow left" onclick="prevImage()">‹</button>
+
+        <img
+          id="mainProductImage"
+          data-images='{{ images | tojson | safe }}'
+          src="{{ url_for('static', filename='images/products/' ~ product.id ~ '/' ~ images[0]) }}"
+          alt="{{ product.name }}"
+        >
+
+        <button class="gallery-arrow right" onclick="nextImage()">›</button>
+
+      </div>
+
+      <div class="thumbnail-row">
+        {% for img in images %}
+        <img
+          class="thumb"
+          src="{{ url_for('static', filename='images/products/' ~ product.id ~ '/' ~ img) }}"
+          onclick="changeImageByIndex({{ loop.index0 }})"
+        >
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- RIGHT: PRODUCT INFO -->
+    <div class="pdp-info">
+
+      <h1 class="pdp-title">{{ product.name }}</h1>
+      <p class="pdp-price">Rs. {{ product.price }}</p>
+
+      <!-- DESCRIPTION -->
+      <div class="product-description">
+        <ul class="pdp-description">
+          {% if product["description"] %}
+            {% for line in product["description"].splitlines() %}
+              <li>{{ line }}</li>
+            {% endfor %}
+          {% endif %}
+        </ul>
+      </div>
+
+      <!-- SIZE -->
+      <div class="pdp-block">
+        <span class="pdp-label">Size</span>
+        <div class="size-options">
+          {% for size in sizes %}
+            <button
+              class="size-btn {% if not size.in_stock %}sold-out{% endif %}"
+              onclick="selectSize(this)"
+              {% if not size.in_stock %}disabled{% endif %}
+              data-size="{{ size.label }}"
+            >
+              {{ size.label }}
+            </button>
+          {% endfor %}
+        </div>
+
+        <button type="button" class="size-chart-trigger" onclick="openSizeChart()">
+          Size Chart
+        </button>
+
+        <div class="size-error" id="sizeError">
+          Please select a size
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <button class="btn-add" onclick="addToCart()">Add to Cart</button>
+      <button class="btn-buy" onclick="buyNow()">Buy Now</button>
+
+      <!-- PRODUCT DETAILS (NOW INSIDE RIGHT COLUMN) -->
+      <div class="product-info-section">
+
+        <hr class="product-divider">
+
+        <h4>Product Details</h4>
+
+        <strong>Fabric</strong>
+        <p>
+          240 GSM heavyweight French Terry<br>
+          100% premium cotton<br>
+          Soft loopback inner texture<br>
+          Breathable yet structured drape
+        </p>
+
+        <strong>Construction</strong>
+        <p>
+          Drop shoulder seam<br>
+          Reinforced ribbed neckline<br>
+          Double stitched hem & sleeves<br>
+          Relaxed unisex oversized fit
+        </p>
+
+        <hr class="product-divider">
+
+        <h4>Fit & Sizing</h4>
+        <p>
+          Fit: Oversized<br>
+          Model is 5’10 wearing size M<br>
+          Designed for relaxed street silhouette<br>
+          For a regular fit, choose one size smaller
+        </p>
+
+        <hr class="product-divider">
+
+        <h4>Care Instructions</h4>
+        <p>
+          Machine wash cold<br>
+          Wash inside out<br>
+          Do not bleach<br>
+          Do not tumble dry<br>
+          Iron inside out only
+        </p>
+
+        <hr class="product-divider">
+
+        <h4>Shipping & Returns</h4>
+        <p>
+          Ships within 2–4 business days<br>
+          Pan-India delivery<br><br>
+          7-day easy exchange for size issues<br>
+          Product must be unused with tags intact
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- YOU MAY ALSO LIKE -->
+<section class="related-section">
+
+  <h2 class="related-title">You may also like</h2>
+
+  <div class="related-grid">
+    {% for item in related_products %}
+    <a href="{{ url_for('product_detail', product_id=item.id) }}" class="related-card">
+      <div class="related-image">
+        <img
+          src="{{ url_for('static', filename='images/products/' ~ item.id ~ '/' ~ item.image) }}"
+          alt="{{ item.name }}"
+        >
+      </div>
+      <div class="related-info">
+        <p class="related-name">{{ item.name }}</p>
+        <span class="related-price">Rs. {{ item.price }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+</section>
+
+<!-- SIZE CHART MODAL -->
+<div id="sizeChartModal" class="size-modal">
+  <div class="size-modal-content">
+    <div class="size-modal-header">
+      <h3>Size Chart (in inches)</h3>
+      <button class="size-close-btn" onclick="closeSizeChart()">&times;</button>
+    </div>
+
+    <table class="size-table">
+      <tr>
+        <th>Size</th>
+        <th>Chest</th>
+        <th>Length</th>
+        <th>Shoulder</th>
+        <th>Sleeve</th>
+      </tr>
+      <tr><td>S</td><td>44</td><td>27</td><td>20.5</td><td>8.5</td></tr>
+      <tr><td>M</td><td>46</td><td>28</td><td>21.5</td><td>9</td></tr>
+      <tr><td>L</td><td>48</td><td>29</td><td>22.5</td><td>9.5</td></tr>
+      <tr><td>XL</td><td>50</td><td>30</td><td>23.5</td><td>10</td></tr>
+    </table>
+
+    <p class="size-note">
+      All measurements are garment measurements, not body measurements.
+    </p>
+  </div>
+</div>
+
+<!-- JS -->
+<script>
+let selectedSize = null;
+
+/* =========================
+   SIZE SELECTION
+========================= */
+function selectSize(btn) {
+  if (btn.disabled) return;
+
+  document.querySelectorAll(".size-btn")
+    .forEach(b => b.classList.remove("active"));
+
+  btn.classList.add("active");
+  selectedSize = btn.dataset.size;
+
+  console.log("Selected size:", selectedSize);
+}
+
+/* =========================
+   BUY NOW
+========================= */
+function buyNow() {
+  if (!selectedSize) {
+    document.querySelector(".size-options").classList.add("shake");
+    setTimeout(() => {
+      document.querySelector(".size-options").classList.remove("shake");
+    }, 500);
+    return;
+  }
+
+  fetch("/buy-now", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      product_id: Number("{{ product.id }}"),
+      size: selectedSize,
+      quantity: 1
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      window.location.href = "/checkout?type=buy_now";
+    }
+  });
+
+}
+
+function openSizeChart() {
+  document.getElementById("sizeChartModal").style.display = "flex";
+}
+
+function closeSizeChart() {
+  document.getElementById("sizeChartModal").style.display = "none";
+}
+
+window.onclick = function(event) {
+  const modal = document.getElementById("sizeChartModal");
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+}
+  
+/* =========================
+   ADD TO CART
+========================= */
+function addToCart() {
+  if (!selectedSize) {
+    document.querySelector(".size-options").classList.add("shake");
+    setTimeout(() => {
+      document.querySelector(".size-options").classList.remove("shake");
+    }, 500);
+    return;
+  }
+
+  fetch("/add-to-cart", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      product_id: Number("{{ product.id }}"),
+      size: selectedSize,
+      quantity: 1
+    })
+  })
+  .then(async (res) => {
+
+    if (res.status === 401) {
+      window.location.href = "/login";
+      return null;
+    }
+
+    return res.json();
+  })
+  .then(data => {
+    if (!data) return;
+
+    if (data.success) {
+      animateAddToCart();
+      updateCartBadge(data.cart_count);
+    }
+  });
+}
+
+/* =========================
+   CART ANIMATION
+========================= */
+function animateAddToCart() {
+  const img = document.getElementById("mainProductImage");
+  const cart = document.querySelector("a[href='/cart']");
+  if (!img || !cart) return;
+
+  const imgRect = img.getBoundingClientRect();
+  const cartRect = cart.getBoundingClientRect();
+
+  const fly = img.cloneNode(true);
+  fly.style.position = "fixed";
+  fly.style.left = imgRect.left + "px";
+  fly.style.top = imgRect.top + "px";
+  fly.style.width = imgRect.width + "px";
+  fly.style.zIndex = "9999";
+  fly.style.transition = "all 0.8s ease";
+
+  document.body.appendChild(fly);
+
+  setTimeout(() => {
+    fly.style.left = cartRect.left + "px";
+    fly.style.top = cartRect.top + "px";
+    fly.style.width = "30px";
+    fly.style.opacity = "0";
+  }, 50);
+
+  setTimeout(() => fly.remove(), 900);
+}
+
+/* =========================
+   CART BADGE
+========================= */
+function updateCartBadge(count) {
+  let badge = document.querySelector(".cart-badge");
+
+  if (!badge) {
+    badge = document.createElement("span");
+    badge.className = "cart-badge";
+    document.querySelector("a[href='/cart']").appendChild(badge);
+  }
+
+  badge.innerText = count;
+}
+
+
+/* =========================
+   PRODUCT IMAGE GALLERY (FIXED)
+========================= */
+const imgEl = document.getElementById("mainProductImage");
+const productImages = JSON.parse(imgEl.dataset.images || "[]");
+let currentIndex = 0;
+
+function showImage(index) {
+  if (!productImages.length) return;
+  imgEl.src = "/static/images/products/{{ product.id }}/" + productImages[index];
+}
+
+function nextImage() {
+  currentIndex = (currentIndex + 1) % productImages.length;
+  showImage(currentIndex);
+}
+
+function prevImage() {
+  currentIndex =
+    (currentIndex - 1 + productImages.length) % productImages.length;
+  showImage(currentIndex);
+}
+
+function changeImageByIndex(index) {
+  currentIndex = index;
+  showImage(currentIndex);
+}
+
+
+// MOBILE SWIPE
+let startX = 0;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const img = document.getElementById("mainProductImage");
+  if (!img) return;
+
+  img.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+  });
+
+  img.addEventListener("touchend", e => {
+    const endX = e.changedTouches[0].clientX;
+    if (startX - endX > 50) nextImage();
+    if (endX - startX > 50) prevImage();
+  });
+});
+</script>
+{% endblock %}
+

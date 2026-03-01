@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}My Profile | QualyJoyn{% endblock %}
+
+{% block content %}
+<section class="profile-page">
+
+  <div class="profile-container">
+
+    <!-- PROFILE HEADER -->
+    <div class="profile-header">
+      <div class="avatar-circle">
+        {{ user.name[0] }}
+      </div>
+      <h2>{{ user.name }}</h2>
+      <p>{{ user.email }}</p>
+    </div>
+
+    <!-- PROFILE DETAILS -->
+    <div class="profile-card">
+
+      <div class="profile-row">
+        <span class="label">Phone</span>
+        <span>{{ user.phone or "Not added" }}</span>
+      </div>
+
+      <div class="profile-row">
+        <span class="label">Address</span>
+        <span>{{ user.address or "No address saved" }}</span>
+      </div>
+
+      
+
+    </div>
+
+  </div>
+
+</section>
+{% endblock %}

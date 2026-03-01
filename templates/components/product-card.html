@@ -1,0 +1,25 @@
+<a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-card">
+
+  <div class="product-image">
+    {% if product.images and product.images|length > 0 %}
+      <img
+        src="{{ url_for('static', filename='images/products/' ~ product.id ~ '/' ~ product.images[0]) }}"
+        alt="{{ product.name }}"
+        loading="lazy"
+      >
+    {% else %}
+      <img
+        src="{{ url_for('static', filename='images/placeholder.png') }}"
+        alt="No image"
+        loading="lazy"
+      >
+    {% endif %}
+  </div>
+
+
+  <div class="product-info">
+    <h3 class="product-name">{{ product.name }}</h3>
+    <p class="product-price">Rs. {{ product.price }}</p>
+  </div>
+
+</a>
