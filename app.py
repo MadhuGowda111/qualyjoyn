@@ -109,11 +109,12 @@ def send_email(to_email, subject, body):
 
 def send_email_async(to_email, subject, body):
     def task():
+        print("Starting email thread...")
         try:
             send_email(to_email, subject, body)
             print("EMAIL SENT SUCCESSFULLY")
         except Exception as e:
-            print("Async email failed:", e)
+            print("Async email failed:", str(e))
 
     threading.Thread(target=task).start()
 
