@@ -30,7 +30,7 @@
             <div class="order-row">
               <span class="order-label">Date</span>
               <span class="order-value">
-                {{ order.created_at[:10] }}
+                {{ order.created_at.strftime("%d %b %Y, %I:%M %p") }}
               </span>
             </div>
 

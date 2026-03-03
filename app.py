@@ -96,14 +96,23 @@ def send_email(to_email, subject, body):
         server.login(EMAIL_USER, EMAIL_PASS)
         server.send_message(msg)
 
-def send_email_async(to_email, subject, body):
-    def task():
-        try:
-            send_email(to_email, subject, body)
-        except Exception as e:
-            print("Async email failed:", e)
+# Enable this code once the mail is working
 
-    threading.Thread(target=task).start()
+# def send_email_async(to_email, subject, body):
+#     def task():
+#         try:
+#             send_email(to_email, subject, body)
+#         except Exception as e:
+#             print("Async email failed:", e)
+
+#     threading.Thread(target=task).start()
+
+def send_email_async(to_email, subject, body):
+    try:
+        send_email(to_email, subject, body)
+        print("EMAIL SENT SUCCESSFULLY")
+    except Exception as e:
+        print("EMAIL ERROR:", str(e))
 
 
 class User(db.Model):
@@ -392,7 +401,7 @@ def forgot_password():
 
         flash("If this email exists, a reset link has been sent.", "info")
         return redirect("/login")
-
+    print("FORGOT PASSWORD ROUTE HIT")
     return render_template("forgot_password.html")
 
 @app.route("/reset-password/<token>", methods=["GET", "POST"])
