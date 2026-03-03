@@ -7,6 +7,7 @@ import secrets
 import re
 import threading
 import smtplib
+import requests
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from email.mime.text import MIMEText
@@ -96,25 +97,43 @@ def send_email(to_email, subject, body):
         server.login(EMAIL_USER, EMAIL_PASS)
         server.send_message(msg)
 
-# Enable this code once the mail is working
 
-# def send_email_async(to_email, subject, body):
-#     def task():
-#         try:
-#             send_email(to_email, subject, body)
-#         except Exception as e:
-#             print("Async email failed:", e)
-
-#     threading.Thread(target=task).start()
-
-def send_email_async(to_email, subject, body):
+def send_email_async(to_email, subject, html_content):
     def task():
-        print("Starting email thread...")
         try:
-            send_email(to_email, subject, body)
-            print("EMAIL SENT SUCCESSFULLY")
+            api_key = os.environ.get("SENDGRID_API_KEY")
+
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+
+            data = {
+                "personalizations": [
+                    {
+                        "to": [{"email": to_email}],
+                        "subject": subject
+                    }
+                ],
+                "from": {"email": "qualyjoyn@gmail.com"},
+                "content": [
+                    {
+                        "type": "text/html",
+                        "value": html_content
+                    }
+                ]
+            }
+
+            response = requests.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                headers=headers,
+                json=data
+            )
+
+            print("SendGrid status:", response.status_code)
+
         except Exception as e:
-            print("Async email failed:", str(e))
+            print("SendGrid Error:", str(e))
 
     threading.Thread(target=task).start()
 
