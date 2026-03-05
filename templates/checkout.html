@@ -62,9 +62,7 @@
         <div id="pincode-error" class="error-text"></div>
       </div>
 
-      <button type="submit" class="btn-place-order">
-        Place Order
-      </button>
+      <button type="button" onclick="payNow()">Pay Now</button>
 
     </form>
 
@@ -208,5 +206,41 @@ function clearErrors() {
   document.querySelectorAll(".error-text").forEach(e => e.innerText = "");
   document.querySelectorAll("input").forEach(i => i.classList.remove("error"));
 }
+</script>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+
+function payNow() {
+
+    var options = {
+        "key": "{{ razorpay_key }}",
+        "amount": "{{ amount }}",
+        "currency": "INR",
+        "name": "QualyJoyn",
+        "description": "Order Payment",
+        "order_id": "{{ razorpay_order_id }}",
+
+        "handler": function (response) {
+
+            fetch("/verify-payment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(response)
+            })
+            .then(res => res.json())
+            .then(data => {
+                window.location = data.redirect
+            });
+
+        }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.open();
+}
+
 </script>
 {% endblock %}

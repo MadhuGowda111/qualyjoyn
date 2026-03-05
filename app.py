@@ -9,6 +9,7 @@ import threading
 import smtplib
 import requests
 import psycopg2
+import razorpay
 from psycopg2.extras import RealDictCursor
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -36,6 +37,11 @@ def admin_required(f):
 
         return f(*args, **kwargs)
     return decorated
+
+razorpay_client = razorpay.Client(auth=(
+    os.getenv("RAZORPAY_KEY_ID"),
+    os.getenv("RAZORPAY_SECRET")
+))
 
 # ===============================
 # SECRET KEY
@@ -100,28 +106,27 @@ def send_email(to_email, subject, body):
 
 def send_email_async(to_email, subject, html_content):
     def task():
-        try:
-            api_key = os.environ.get("SENDGRID_API_KEY")
+        print("SendGrid thread started")
 
+        api_key = os.environ.get("SENDGRID_API_KEY")
+        print("API KEY VALUE:", api_key)
+
+        try:
             headers = {
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json"
             }
 
             data = {
-                "personalizations": [
-                    {
-                        "to": [{"email": to_email}],
-                        "subject": subject
-                    }
-                ],
+                "personalizations": [{
+                    "to": [{"email": to_email}],
+                    "subject": subject
+                }],
                 "from": {"email": "qualyjoyn@gmail.com"},
-                "content": [
-                    {
-                        "type": "text/html",
-                        "value": html_content
-                    }
-                ]
+                "content": [{
+                    "type": "text/html",
+                    "value": html_content
+                }]
             }
 
             response = requests.post(
@@ -131,6 +136,7 @@ def send_email_async(to_email, subject, html_content):
             )
 
             print("SendGrid status:", response.status_code)
+            print("SendGrid response:", response.text)
 
         except Exception as e:
             print("SendGrid Error:", str(e))
@@ -880,6 +886,16 @@ def checkout():
         session["checkout_mode"] = "buy_now"
 
         subtotal = item["price"] * item["quantity"]
+        total = subtotal
+
+        # 🔥 Create Razorpay Order
+        razorpay_order = razorpay_client.order.create({
+            "amount": int(total * 100),
+            "currency": "INR",
+            "payment_capture": 1
+        })
+
+        razorpay_order_id = razorpay_order["id"]
 
         return render_template(
             "checkout.html",
@@ -887,7 +903,10 @@ def checkout():
                 **item,
                 "subtotal": subtotal
             }],
-            total=subtotal
+            total=total,
+            razorpay_order_id=razorpay_order_id,
+            razorpay_key=os.getenv("RAZORPAY_KEY_ID"),
+            amount=int(total * 100)
         )
 
     # ===============================
@@ -947,10 +966,22 @@ def checkout():
     cursor.close()
     conn.close()
 
+    # 🔥 Create Razorpay Order AFTER total is calculated
+    razorpay_order = razorpay_client.order.create({
+        "amount": int(total * 100),
+        "currency": "INR",
+        "payment_capture": 1
+    })
+
+    razorpay_order_id = razorpay_order["id"]
+
     return render_template(
         "checkout.html",
         cart_items=cart_items,
-        total=total
+        total=total,
+        razorpay_order_id=razorpay_order_id,
+        razorpay_key=os.getenv("RAZORPAY_KEY_ID"),
+        amount=int(total * 100)
     )
 
 @app.route("/buy-now", methods=["POST"])
@@ -1336,6 +1367,32 @@ def order_success(order_id):
         order=order,
         items=items
     )
+
+@app.route("/verify-payment", methods=["POST"])
+def verify_payment():
+
+    data = request.json
+
+    razorpay_payment_id = data["razorpay_payment_id"]
+    razorpay_order_id = data["razorpay_order_id"]
+    razorpay_signature = data["razorpay_signature"]
+
+    try:
+        razorpay_client.utility.verify_payment_signature({
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        })
+
+        # Payment successful
+        # Call your existing place_order logic here
+
+        return jsonify({
+            "redirect": url_for("order_success")
+        })
+
+    except Exception as e:
+        return jsonify({"error": "Payment verification failed"}), 400
 
 @app.route("/admin")
 @admin_required
