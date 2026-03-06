@@ -286,40 +286,21 @@
 
 .premium-pay-btn {
     width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 10px;
-
-    background: linear-gradient(135deg, #000000, #1a1a1a);
-    
-    color: white;
+    background: linear-gradient(135deg, #c8a96a, #e6c78b);
+    color: #000;
     font-size: 18px;
     font-weight: 600;
-
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
+    padding: 14px 0;
+    border: none;
+    border-radius: 30px;
     cursor: pointer;
+    letter-spacing: 1px;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .premium-pay-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0px 8px 25px rgba(0,0,0,0.3);
-}
-
-.pay-icons img{
-    height:24px;
-    margin-left:6px;
-}
-
-.pay-text{
-    letter-spacing:0.5px;
-}
-.secure-pay{
-text-align:center;
-font-size:13px;
-margin-top:8px;
-color:#666;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    background: linear-gradient(135deg, #d4b57a, #f0d79f);
 }
