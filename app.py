@@ -1378,21 +1378,88 @@ def verify_payment():
     razorpay_signature = data["razorpay_signature"]
 
     try:
+        # Verify Razorpay signature
         razorpay_client.utility.verify_payment_signature({
-            'razorpay_order_id': razorpay_order_id,
-            'razorpay_payment_id': razorpay_payment_id,
-            'razorpay_signature': razorpay_signature
+            "razorpay_order_id": razorpay_order_id,
+            "razorpay_payment_id": razorpay_payment_id,
+            "razorpay_signature": razorpay_signature
         })
 
-        # Payment successful
-        # Call your existing place_order logic here
+        import uuid
+        order_id = "QJ-" + uuid.uuid4().hex[:8].upper()
 
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # ================= GET CART ITEMS =================
+        cursor.execute("""
+            SELECT * FROM cart WHERE user_id = %s
+        """, (session["user_id"],))
+
+        cart_items = cursor.fetchall()
+
+        # ================= CREATE ORDER =================
+        cursor.execute("""
+            INSERT INTO orders (order_id, user_id, payment_id, status)
+            VALUES (%s, %s, %s, %s)
+        """, (
+            order_id,
+            session["user_id"],
+            razorpay_payment_id,
+            "Paid"
+        ))
+
+        # ================= INSERT ORDER ITEMS =================
+        for item in cart_items:
+            cursor.execute("""
+                INSERT INTO order_items (order_id, product_id, size, quantity)
+                VALUES (%s, %s, %s, %s)
+            """, (
+                order_id,
+                item["product_id"],
+                item["size"],
+                item["quantity"]
+            ))
+
+        # ================= CLEAR CART =================
+        cursor.execute("""
+            DELETE FROM cart WHERE user_id = %s
+        """, (session["user_id"],))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # ================= SEND EMAIL =================
+        try:
+            user_email = session.get("user_email")
+
+            if user_email:
+                email_body = f"""
+                <h2>Order Confirmed</h2>
+                <p>Your order ID: <b>{order_id}</b></p>
+                <p>Payment ID: {razorpay_payment_id}</p>
+                <p>Thank you for shopping with QualyJoyn ❤️</p>
+                """
+
+                send_email_async(
+                    user_email,
+                    f"Order Confirmation - {order_id}",
+                    email_body
+                )
+
+        except Exception as e:
+            print("Email sending failed:", e)
+
+        # ================= REDIRECT SUCCESS =================
         return jsonify({
-            "redirect": url_for("order_success")
+            "redirect": url_for("order_success", order_id=order_id)
         })
 
     except Exception as e:
+        print("Payment verification failed:", e)
         return jsonify({"error": "Payment verification failed"}), 400
+    
 
 @app.route("/admin")
 @admin_required

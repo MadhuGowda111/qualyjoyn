@@ -62,7 +62,7 @@
         <div id="pincode-error" class="error-text"></div>
       </div>
 
-      <button type="button" id="pay-btn" class="premium-pay-btn" onclick="payNow()">
+      <button type="button" id="pay-btn" class="premium-pay-btn" onclick="startPayment()">
           Pay Now
       </button>
       <p class="secure-pay">
@@ -148,6 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
 /* ================= VALIDATION ================= */
 
 function validateForm() {
@@ -215,6 +216,17 @@ function clearErrors() {
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+
+function startPayment() {
+
+    clearErrors();
+
+    if (!validateForm()) {
+        return;
+    }
+
+    payNow();
+}
 
 function payNow() {
 
