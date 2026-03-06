@@ -283,3 +283,43 @@
     border-top: 1px solid #eee;
     margin: 40px 0;
 }
+
+.premium-pay-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 10px;
+
+    background: linear-gradient(135deg, #000000, #1a1a1a);
+    
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.premium-pay-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 8px 25px rgba(0,0,0,0.3);
+}
+
+.pay-icons img{
+    height:24px;
+    margin-left:6px;
+}
+
+.pay-text{
+    letter-spacing:0.5px;
+}
+.secure-pay{
+text-align:center;
+font-size:13px;
+margin-top:8px;
+color:#666;
+}
