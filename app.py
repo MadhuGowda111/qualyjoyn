@@ -59,6 +59,7 @@ def get_db_connection():
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
         sslmode="require",
+        connect_timeout=5,   # 🔥 ADD THIS
         cursor_factory=RealDictCursor
     )
 # ===============================
