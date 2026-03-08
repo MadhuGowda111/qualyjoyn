@@ -9,7 +9,7 @@
   <div class="checkout-grid">
 
     <!-- ================= FORM ================= -->
-    <form id="checkout-form" novalidate>
+    <form id="checkout-form" method="POST" action="/place-order"></form>
 
       <h2>Shipping Details</h2>
 
@@ -245,17 +245,24 @@ function payNow() {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(response)
+                body: JSON.stringify({
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature
+                })
             })
             .then(res => res.json())
             .then(data => {
 
-                if (data.redirect) {
-                    window.location.href = data.redirect;
+                if (data.success) {
+
+                    // submit checkout form to create order
+                    document.getElementById("checkout-form").submit();
+
                 } else {
-                    console.error("Redirect missing:", data);
-                    alert("Payment successful but redirect failed");
-                    window.location.href = "/";
+
+                    alert("Payment verification failed");
+
                 }
 
             });

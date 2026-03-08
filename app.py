@@ -16,7 +16,6 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
-from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 
 # ===============================
@@ -71,25 +70,7 @@ EMAIL_PASS = os.getenv("EMAIL_PASS")
 # ===============================
 # DATABASE CONFIG (SUPABASE)
 # ===============================
-DATABASE_URL = os.getenv("DATABASE_URL")
 
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL is not set in environment variables")
-
-# Supabase requires postgresql:// not postgres://
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace(
-        "postgres://",
-        "postgresql://",
-        1
-    )
-
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-db = SQLAlchemy(app)
-
-print("Connected to:", DATABASE_URL)
 
 def send_email(to_email, subject, body):
     msg = MIMEMultipart("alternative")
@@ -144,15 +125,6 @@ def send_email_async(to_email, subject, html_content):
 
     threading.Thread(target=task).start()
 
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150))
-    email = db.Column(db.String(150), unique=True)
-    password = db.Column(db.String(200))
-    role = db.Column(db.String(20), default="user")
-    reset_token = db.Column(db.String(200), nullable=True)
-    reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
 @app.route("/")
 def home():
@@ -1379,87 +1351,22 @@ def verify_payment():
     razorpay_signature = data["razorpay_signature"]
 
     try:
-        # Verify Razorpay signature
         razorpay_client.utility.verify_payment_signature({
             "razorpay_order_id": razorpay_order_id,
             "razorpay_payment_id": razorpay_payment_id,
             "razorpay_signature": razorpay_signature
         })
 
-        import uuid
-        order_id = "QJ-" + uuid.uuid4().hex[:8].upper()
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # ================= GET CART ITEMS =================
-        cursor.execute("""
-            SELECT * FROM cart WHERE user_id = %s
-        """, (session["user_id"],))
-
-        cart_items = cursor.fetchall()
-
-        # ================= CREATE ORDER =================
-        cursor.execute("""
-            INSERT INTO orders (order_id, user_id, payment_id, status)
-            VALUES (%s, %s, %s, %s)
-        """, (
-            order_id,
-            session["user_id"],
-            razorpay_payment_id,
-            "Paid"
-        ))
-
-        # ================= INSERT ORDER ITEMS =================
-        for item in cart_items:
-            cursor.execute("""
-                INSERT INTO order_items (order_id, product_id, size, quantity)
-                VALUES (%s, %s, %s, %s)
-            """, (
-                order_id,
-                item["product_id"],
-                item["size"],
-                item["quantity"]
-            ))
-
-        # ================= CLEAR CART =================
-        cursor.execute("""
-            DELETE FROM cart WHERE user_id = %s
-        """, (session["user_id"],))
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        # ================= SEND EMAIL =================
-        try:
-            user_email = session.get("user_email")
-
-            if user_email:
-                email_body = f"""
-                <h2>Order Confirmed</h2>
-                <p>Your order ID: <b>{order_id}</b></p>
-                <p>Payment ID: {razorpay_payment_id}</p>
-                <p>Thank you for shopping with QualyJoyn ❤️</p>
-                """
-
-                send_email_async(
-                    user_email,
-                    f"Order Confirmation - {order_id}",
-                    email_body
-                )
-
-        except Exception as e:
-            print("Email sending failed:", e)
-
-        # ================= REDIRECT SUCCESS =================
         return jsonify({
-            "redirect": url_for("order_success", order_id=order_id)
+            "success": True
         })
 
     except Exception as e:
         print("Payment verification failed:", e)
-        return jsonify({"error": "Payment verification failed"}), 400
+
+        return jsonify({
+            "success": False
+        }), 400
     
 
 @app.route("/admin")
@@ -1821,4 +1728,4 @@ def close_order(order_id):
 
 if __name__ == "__main__":
     with app.app_context():
-     app.run(host="0.0.0.0", port=5000, debug=True)
+     app.run(host="0.0.0.0", port=5000)
