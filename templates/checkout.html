@@ -238,7 +238,7 @@ function payNow() {
         "description": "Order Payment",
         "order_id": "{{ razorpay_order_id }}",
 
-        "handler": function (response) {
+        handler: function (response) {
 
             fetch("/verify-payment", {
                 method: "POST",
@@ -256,13 +256,26 @@ function payNow() {
 
                 if (data.success) {
 
-                    // submit checkout form to create order
-                    document.getElementById("checkout-form").submit();
+                    const form = document.getElementById("checkout-form");
+                    const formData = new FormData(form);
+
+                    fetch("/place-order", {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(order => {
+
+                        if (order.redirect) {
+                            window.location.href = order.redirect;
+                        } else {
+                            alert("Order placed but redirect failed");
+                        }
+
+                    });
 
                 } else {
-
                     alert("Payment verification failed");
-
                 }
 
             });

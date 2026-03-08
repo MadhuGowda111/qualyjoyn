@@ -10,6 +10,7 @@ import smtplib
 import requests
 import psycopg2
 import razorpay
+import time
 from psycopg2.extras import RealDictCursor
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -51,16 +52,21 @@ app.config["SECRET_KEY"] = os.getenv(
 )
 
 def get_db_connection():
-    return psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        sslmode="require",
-        connect_timeout=5,   # 🔥 ADD THIS
-        cursor_factory=RealDictCursor
-    )
+    for attempt in range(3):
+        try:
+            return psycopg2.connect(
+                host=os.getenv("DB_HOST"),
+                port=os.getenv("DB_PORT"),
+                dbname=os.getenv("DB_NAME"),
+                user=os.getenv("DB_USER"),
+                password=os.getenv("DB_PASSWORD"),
+                sslmode="require",
+                connect_timeout=10,
+                cursor_factory=RealDictCursor
+            )
+        except psycopg2.OperationalError:
+            time.sleep(2)
+    raise
 # ===============================
 # EMAIL CONFIG
 # ===============================
