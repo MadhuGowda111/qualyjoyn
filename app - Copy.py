@@ -173,6 +173,9 @@ def home():
                 "images": images
             })
 
+        cursor.close()
+        conn.close()
+
         return render_template(
             "home.html",
             products=products,
@@ -180,6 +183,9 @@ def home():
         )
 
     # CASE 2: Multiple categories → show categories
+    cursor.close()
+    conn.close()
+
     return render_template(
         "home.html",
         products=None,
@@ -193,6 +199,9 @@ def inject_nav_categories():
 
     cursor.execute("SELECT name, slug FROM categories")
     categories = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
 
     return {
         "show_categories_nav": len(categories) > 1,
@@ -248,6 +257,8 @@ def register():
         existing_email = cursor.fetchone()
 
         if existing_email:
+            cursor.close()
+            conn.close()
             return render_register_error("Email already registered. Please login.")
 
         # ✅ Check duplicate phone (if provided)
@@ -259,6 +270,8 @@ def register():
             existing_phone = cursor.fetchone()
 
             if existing_phone:
+                cursor.close()
+                conn.close()
                 return render_register_error("Phone number already registered.")
 
         password_hash = generate_password_hash(password)
@@ -274,7 +287,12 @@ def register():
         except Exception as e:
             conn.rollback()
             print("Register Error:", e)
+            cursor.close()
+            conn.close()
             return render_register_error("Something went wrong. Try again.")
+
+        cursor.close()
+        conn.close()
 
         flash("Account created successfully. Please login.", "success")
         return redirect("/login")
@@ -306,6 +324,9 @@ def login():
             )
 
         user = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
 
         if user and check_password_hash(user["password_hash"], password):
 
@@ -382,6 +403,9 @@ def forgot_password():
 
             send_email_async(email, "Reset Your Password", email_body)
 
+        cursor.close()
+        conn.close()
+
         flash("If this email exists, a reset link has been sent.", "info")
         return redirect("/login")
     print("FORGOT PASSWORD ROUTE HIT")
@@ -400,12 +424,16 @@ def reset_password(token):
     user = cursor.fetchone()
 
     if not user:
+        cursor.close()
+        conn.close()
         return "Invalid or expired link", 400
 
     # expiry already stored as datetime in PostgreSQL
     expiry_time = user["reset_token_expiry"]
 
     if not expiry_time or datetime.now() > expiry_time:
+        cursor.close()
+        conn.close()
         return "Reset link expired", 400
 
     if request.method == "POST":
@@ -413,6 +441,8 @@ def reset_password(token):
 
         if len(new_password) < 6:
             flash("Password must be at least 6 characters", "error")
+            cursor.close()
+            conn.close()
             return render_template("reset_password.html")
 
         password_hash = generate_password_hash(new_password)
@@ -427,8 +457,14 @@ def reset_password(token):
 
         conn.commit()
 
+        cursor.close()
+        conn.close()
+
         flash("Password reset successfully. Please login.", "success")
         return redirect("/login")
+
+    cursor.close()
+    conn.close()
     return render_template("reset_password.html")
 
 @app.context_processor
@@ -471,6 +507,8 @@ def category(slug):
     category = cursor.fetchone()
 
     if not category:
+        cursor.close()
+        conn.close()
         return redirect("/")
 
     # 2️⃣ Fetch products using category ID
@@ -479,6 +517,10 @@ def category(slug):
         (category["id"],)
     )
     raw_products = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
     products = []
 
     for p in raw_products:
@@ -520,6 +562,8 @@ def product_detail(product_id):
     product = cursor.fetchone()
 
     if product is None:
+        cursor.close()
+        conn.close()
         return "Product not found", 404
 
     # Related products
@@ -545,6 +589,8 @@ def product_detail(product_id):
 
     sizes_db = cursor.fetchall()
 
+    cursor.close()
+    conn.close()
 
     # Convert sizes
     sizes = [
@@ -621,6 +667,8 @@ def add_to_cart():
 
     cart_count = cursor.fetchone()["total"]
 
+    cursor.close()
+    conn.close()
 
     return jsonify({
         "success": True,
@@ -648,6 +696,8 @@ def update_cart():
     item = cursor.fetchone()
 
     if not item:
+        cursor.close()
+        conn.close()
         return jsonify({"success": False})
 
     if action == "inc":
@@ -672,6 +722,9 @@ def update_cart():
             """, (cart_id, session["user_id"]))
 
     conn.commit()
+    cursor.close()
+    conn.close()
+
     return jsonify({"success": True})
 
 @app.route("/my-orders")
@@ -689,6 +742,9 @@ def my_orders():
     """, (session["user_id"],))
 
     orders = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
 
     return render_template("my_orders.html", orders=orders)
 
@@ -743,6 +799,8 @@ def cart():
             "image": images[0] if images else "no-image.png"
         })
 
+    cursor.close()
+    conn.close()
 
     return render_template(
         "cart.html",
@@ -776,6 +834,9 @@ def remove_from_cart():
 
     result = cursor.fetchone()
     cart_count = result["total"] if result and result["total"] else 0
+
+    cursor.close()
+    conn.close()
 
     return jsonify({
         "success": True,
@@ -844,7 +905,8 @@ def checkout():
     rows = cursor.fetchall()
 
     if not rows:
-
+        cursor.close()
+        conn.close()
         return redirect("/cart")
 
     cart_items = []
@@ -878,6 +940,9 @@ def checkout():
             "subtotal": subtotal,
             "image": images[0] if images else None
         })
+
+    cursor.close()
+    conn.close()
 
     # 🔥 Create Razorpay Order AFTER total is calculated
     razorpay_order = razorpay_client.order.create({
@@ -915,6 +980,9 @@ def buy_now():
     )
 
     product = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
 
     if not product:
         return jsonify({"success": False}), 404
@@ -964,7 +1032,8 @@ def profile():
 
     user = cursor.fetchone()
 
-
+    cursor.close()
+    conn.close()
 
     return render_template("profile.html", user=user)
 
@@ -1004,7 +1073,8 @@ def place_order():
         rows = cursor.fetchall()
 
         if not rows:
-
+            cursor.close()
+            conn.close()
             return jsonify({"field": "global", "message": "Your cart is empty"}), 400
 
         items = []
@@ -1017,7 +1087,8 @@ def place_order():
                 "quantity": row["quantity"]
             })
 
-   
+        cursor.close()
+        conn.close()
 
     # ===============================
     # 📋 FORM DATA
@@ -1121,9 +1192,13 @@ def place_order():
 
     except Exception as e:
         conn.rollback()
-
+        cursor.close()
+        conn.close()
         print("Order Error:", e)
         return jsonify({"field": "global", "message": "Order failed. Try again."}), 500
+
+    cursor.close()
+    conn.close()
 
 
     print("EMAIL TO:", session.get("user_email"))
@@ -1251,6 +1326,8 @@ def order_success(order_id):
 
     order = cursor.fetchone()
 
+    cursor.close()
+    conn.close()
 
     if not order:
         return "Order not found", 404
@@ -1313,6 +1390,9 @@ def admin_dashboard():
     cursor.execute("SELECT COUNT(*) as total FROM users")
     total_users = cursor.fetchone()["total"]
 
+    cursor.close()
+    conn.close()
+
     return render_template(
         "admin/dashboard.html",
         total_orders=total_orders,
@@ -1336,6 +1416,8 @@ def admin_orders():
 
     orders = cursor.fetchall()
 
+    cursor.close()
+    conn.close()
 
     return render_template("admin/orders.html", orders=orders)
 
@@ -1354,6 +1436,8 @@ def admin_products():
 
     products = cursor.fetchall()
 
+    cursor.close()
+    conn.close()
 
     return render_template("admin/products.html", products=products)
 
@@ -1371,6 +1455,9 @@ def delete_product(product_id):
     )
 
     conn.commit()
+
+    cursor.close()
+    conn.close()
 
     return redirect("/admin/products")
 
@@ -1439,8 +1526,13 @@ def admin_add_product():
 
         except Exception as e:
             conn.rollback()
+            cursor.close()
+            conn.close()
             print("Add Product Error:", e)
             return "Error adding product", 500
+
+        cursor.close()
+        conn.close()
 
         return redirect("/admin/products")
 
@@ -1448,6 +1540,8 @@ def admin_add_product():
     cursor.execute("SELECT * FROM categories")
     categories = cursor.fetchall()
 
+    cursor.close()
+    conn.close()
 
     return render_template("admin/add_product.html", categories=categories)
 
@@ -1466,6 +1560,8 @@ def admin_order_detail(order_id):
 
     order = cursor.fetchone()
 
+    cursor.close()
+    conn.close()
 
     if not order:
         return "Order not found"
@@ -1495,9 +1591,13 @@ def admin_add_category():
         """, (name, slug))
 
         conn.commit()
+        cursor.close()
+        conn.close()
 
         return redirect("/admin")
 
+    cursor.close()
+    conn.close()
     return render_template("admin/add_category.html")
 
 @app.route("/admin/categories", methods=["GET", "POST"])
@@ -1539,6 +1639,8 @@ def admin_categories():
 
         conn.commit()
 
+        cursor.close()
+        conn.close()
 
         return redirect("/admin/categories")
 
@@ -1551,6 +1653,8 @@ def admin_categories():
 
     categories = cursor.fetchall()
 
+    cursor.close()
+    conn.close()
 
     return render_template(
         "admin/categories.html",
@@ -1570,6 +1674,9 @@ def delete_category(id):
     )
 
     conn.commit()
+
+    cursor.close()
+    conn.close()
 
     return redirect("/admin/categories")
 
@@ -1596,6 +1703,9 @@ def inject_cart_count():
 
     result = cursor.fetchone()
 
+    cursor.close()
+    conn.close()
+
     cart_count = result["total"] if result and result["total"] else 0
 
     return {"cart_count": cart_count}
@@ -1615,6 +1725,9 @@ def close_order(order_id):
 
     conn.commit()
 
+    cursor.close()
+    conn.close()
+
     return redirect("/admin/orders")
 
 @app.teardown_appcontext
@@ -1624,7 +1737,7 @@ def close_db_connection(exception):
 
     if conn is not None:
         conn.close()
-
+        
 if __name__ == "__main__":
     with app.app_context():
      app.run(host="0.0.0.0", port=5000)

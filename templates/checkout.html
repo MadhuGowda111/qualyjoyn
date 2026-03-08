@@ -9,7 +9,7 @@
   <div class="checkout-grid">
 
     <!-- ================= FORM ================= -->
-    <form id="checkout-form" method="POST" action="/place-order"></form>
+    <form id="checkout-form" method="POST" action="/place-order">
 
       <h2>Shipping Details</h2>
 
@@ -115,37 +115,6 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("checkout-form");
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    clearErrors();
-
-    if (!validateForm()) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const checkoutType = params.get("type");
-
-    let url = "/place-order";
-    if (checkoutType === "buy_now") {
-      url = "/place-order?type=buy_now";
-    }
-
-    const response = await fetch(url, {
-      method: "POST",
-      body: new FormData(form)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      if (data.field && data.message) {
-        showError(data.field, data.message);
-      }
-      return;
-    }
-
-    window.location.href = data.redirect;
-  });
 });
 
 
@@ -240,47 +209,55 @@ function payNow() {
 
         handler: function (response) {
 
-            fetch("/verify-payment", {
+    fetch("/verify-payment", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(response)
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.success){
+
+            // NOW PLACE ORDER
+            fetch("/place-order", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_signature: response.razorpay_signature
-                })
+                body: new FormData(document.getElementById("checkout-form"))
             })
-            .then(res => res.json())
-            .then(data => {
+            .then(async res => {
 
-                if (data.success) {
+                const data = await res.json();
 
-                    const form = document.getElementById("checkout-form");
-                    const formData = new FormData(form);
-
-                    fetch("/place-order", {
-                        method: "POST",
-                        body: formData
-                    })
-                    .then(res => res.json())
-                    .then(order => {
-
-                        if (order.redirect) {
-                            window.location.href = order.redirect;
-                        } else {
-                            alert("Order placed but redirect failed");
-                        }
-
-                    });
-
-                } else {
-                    alert("Payment verification failed");
+                if(!res.ok){
+                    if(data.field && data.message){
+                        showError(data.field, data.message);
+                    }else{
+                        alert("Order failed");
+                    }
+                    return;
                 }
 
+                if(data.redirect){
+                    window.location.href = data.redirect;
+                }else{
+                    alert("Order placed but redirect missing");
+                }
+
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Something went wrong placing order");
             });
 
+        }else{
+            alert("Payment verification failed");
         }
+
+    });
+
+}
     };
 
     var rzp = new Razorpay(options);
