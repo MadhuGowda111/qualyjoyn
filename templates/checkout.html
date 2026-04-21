@@ -72,6 +72,7 @@
     </form>
 
     <!-- ================= SUMMARY ================= -->
+    <!-- ================= SUMMARY ================= -->
     <div class="order-summary">
       <h2>Order Summary</h2>
 
@@ -99,14 +100,47 @@
       </div>
       {% endfor %}
 
+      <hr>
 
-      <div class="summary-total">
-        <span>Total</span>
-        <span>Rs. {{ total }}</span>
+      <!-- Subtotal -->
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span>Rs. {{ subtotal }}</span>
       </div>
-    </div>
 
-  </div>
+      <!-- Delivery Fee -->
+      <div class="summary-row">
+        <span>Delivery Fee</span>
+        <span>
+          {% if delivery_fee == 0 %}
+            Free
+          {% else %}
+            Rs. {{ delivery_fee }}
+          {% endif %}
+        </span>
+      </div>
+
+      <hr>
+
+      <!-- Final Total -->
+      <div class="summary-row total">
+        <strong>Total</strong>
+        <strong>Rs. {{ total }}</strong>
+      </div>
+
+      <!-- Free Delivery Message -->
+      {% if subtotal < 1200 %}
+        <p class="delivery-msg" style="color: orange; font-size: 14px;">
+          Add Rs. {{ 1200 - subtotal }} more for FREE delivery 🚚
+        </p>
+      {% else %}
+        <p class="delivery-msg" style="color: green; font-size: 14px;">
+          🎉 You got FREE delivery!
+        </p>
+      {% endif %}
+
+    </div>
+  
 
 </section>
 {% endblock %}

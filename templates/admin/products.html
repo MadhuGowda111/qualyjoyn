@@ -27,7 +27,19 @@
           <tr>
             <td>{{ product.id }}</td>
             <td>{{ product.name }}</td>
-            <td>Rs. {{ product.price }}</td>
+            <td>
+              {% if product.actual_price and product.actual_price > product.price %}
+                <span style="text-decoration: line-through; color: gray;">
+                  Rs. {{ product.actual_price }}
+                </span>
+                <br>
+                <span style="color: red; font-weight: bold;">
+                  Rs. {{ product.price }}
+                </span>
+              {% else %}
+                Rs. {{ product.price }}
+              {% endif %}
+            </td>
             <td>{{ product.category }}</td>
             <td>
               <a href="/admin/delete-product/{{ product.id }}" class="delete-btn">Delete</a>

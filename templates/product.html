@@ -12,7 +12,13 @@
     <div class="product-gallery">
 
       {% if images %}
-      <div class="main-image">
+      <div class="main-image badge-wrapper">
+
+        {% if product.badge %}
+          <span class="product-badge {{ product.badge }}">
+            {{ product.badge | upper }}
+          </span>
+        {% endif %}
 
         <button class="gallery-arrow left" onclick="prevImage()">‹</button>
 
@@ -44,7 +50,27 @@
     <div class="pdp-info">
 
       <h1 class="pdp-title">{{ product.name }}</h1>
-      <p class="pdp-price">Rs. {{ product.price }}</p>
+      <p class="pdp-price">
+
+        {% if product.actual_price and product.actual_price > product.price %}
+
+          <span class="actual-price">
+            Rs. {{ product.actual_price }}
+          </span>
+
+          <span class="offer-price">
+            Rs. {{ product.price }}
+          </span>
+
+        {% else %}
+
+          <span class="offer-price">
+            Rs. {{ product.price }}
+          </span>
+
+        {% endif %}
+
+      </p>
 
       <!-- DESCRIPTION -->
       <div class="product-description">
@@ -155,15 +181,41 @@
   <div class="related-grid">
     {% for item in related_products %}
     <a href="{{ url_for('product_detail', product_id=item.id) }}" class="related-card">
-      <div class="related-image">
+      <div class="related-image" style="position: relative;">
+
+        {% if item.badge %}
+          <span class="product-badge {{ item.badge }}">
+            {{ item.badge | upper }}
+          </span>
+        {% endif %}
+
         <img
           src="{{ url_for('static', filename='images/products/' ~ item.id ~ '/' ~ item.image) }}"
           alt="{{ item.name }}"
         >
+
       </div>
       <div class="related-info">
         <p class="related-name">{{ item.name }}</p>
-        <span class="related-price">Rs. {{ item.price }}</span>
+        <span class="related-price">
+
+          {% if item.actual_price and item.actual_price > item.price %}
+
+            <span style="text-decoration: line-through; color: gray; font-size: 13px;">
+              Rs. {{ item.actual_price }}
+            </span>
+
+            <span style="font-weight: 600; margin-left: 5px;">
+              Rs. {{ item.price }}
+            </span>
+
+          {% else %}
+
+            Rs. {{ item.price }}
+
+          {% endif %}
+
+        </span>
       </div>
     </a>
     {% endfor %}

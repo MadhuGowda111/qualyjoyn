@@ -1,6 +1,13 @@
 <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-card">
 
-  <div class="product-image">
+  <div class="product-image" style="position: relative;">
+
+    {% if product.badge == "trending" %}
+      <span class="product-badge trending">
+        TRENDING
+      </span>
+    {% endif %}
+
     {% if product.images and product.images|length > 0 %}
       <img
         src="{{ url_for('static', filename='images/products/' ~ product.id ~ '/' ~ product.images[0]) }}"
@@ -14,12 +21,29 @@
         loading="lazy"
       >
     {% endif %}
+
   </div>
 
 
   <div class="product-info">
     <h3 class="product-name">{{ product.name }}</h3>
-    <p class="product-price">Rs. {{ product.price }}</p>
+    <p class="product-price">
+      {% if product.actual_price and product.actual_price > product.price %}
+
+        <span style="text-decoration: line-through; color: gray; margin-right: 6px;">
+          Rs. {{ product.actual_price }}
+        </span>
+
+        <span style="font-weight: 600;">
+          Rs. {{ product.price }}
+        </span>
+
+      {% else %}
+
+        Rs. {{ product.price }}
+
+      {% endif %}
+    </p>
   </div>
 
 </a>

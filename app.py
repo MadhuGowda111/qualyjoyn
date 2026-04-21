@@ -788,6 +788,11 @@ def checkout():
     if "user_id" not in session:
         return redirect(url_for("login", next=request.url))
 
+    # ✅ ALWAYS initialize (prevents undefined error)
+    subtotal = 0
+    delivery_fee = 0
+    cart_items = []
+
     checkout_type = request.args.get("type")
 
     # ===============================
@@ -803,83 +808,76 @@ def checkout():
         session["checkout_mode"] = "buy_now"
 
         subtotal = item["price"] * item["quantity"]
-        total = subtotal
 
-        # 🔥 Create Razorpay Order
-        razorpay_order = razorpay_client.order.create({
-            "amount": int(total * 100),
-            "currency": "INR",
-            "payment_capture": 1
-        })
-
-        razorpay_order_id = razorpay_order["id"]
-
-        return render_template(
-            "checkout.html",
-            cart_items=[{
-                **item,
-                "subtotal": subtotal
-            }],
-            total=total,
-            razorpay_order_id=razorpay_order_id,
-            razorpay_key=os.getenv("RAZORPAY_KEY_ID"),
-            amount=int(total * 100)
-        )
+        cart_items = [{
+            **item,
+            "subtotal": subtotal
+        }]
 
     # ===============================
     # 🛒 DATABASE CART FLOW
     # ===============================
-    session["checkout_mode"] = "cart"
+    else:
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+        session["checkout_mode"] = "cart"
 
-    cursor.execute("""
-        SELECT c.*, p.name, p.price
-        FROM cart c
-        JOIN products p ON c.product_id = p.id
-        WHERE c.user_id = %s
-    """, (session["user_id"],))
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    rows = cursor.fetchall()
+        cursor.execute("""
+            SELECT c.*, p.name, p.price
+            FROM cart c
+            JOIN products p ON c.product_id = p.id
+            WHERE c.user_id = %s
+        """, (session["user_id"],))
 
-    if not rows:
+        rows = cursor.fetchall()
 
-        return redirect("/cart")
+        if not rows:
+            return redirect("/cart")
 
-    cart_items = []
-    total = 0
+        for row in rows:
 
-    for row in rows:
+            item_subtotal = row["price"] * row["quantity"]
+            subtotal += item_subtotal
 
-        subtotal = row["price"] * row["quantity"]
-        total += subtotal
+            image_dir = os.path.join(
+                app.static_folder,
+                "images",
+                "products",
+                str(row["product_id"])
+            )
 
-        image_dir = os.path.join(
-            app.static_folder,
-            "images",
-            "products",
-            str(row["product_id"])
-        )
+            images = []
+            if os.path.exists(image_dir):
+                images = sorted([
+                    img for img in os.listdir(image_dir)
+                    if img.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
+                ])
 
-        images = []
-        if os.path.exists(image_dir):
-            images = sorted([
-                img for img in os.listdir(image_dir)
-                if img.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
-            ])
+            cart_items.append({
+                "product_id": row["product_id"],
+                "name": row["name"],
+                "price": row["price"],
+                "size": row["size"],
+                "quantity": row["quantity"],
+                "subtotal": item_subtotal,
+                "image": images[0] if images else None
+            })
 
-        cart_items.append({
-            "product_id": row["product_id"],
-            "name": row["name"],
-            "price": row["price"],
-            "size": row["size"],
-            "quantity": row["quantity"],
-            "subtotal": subtotal,
-            "image": images[0] if images else None
-        })
+    # ===============================
+    # 🚚 DELIVERY LOGIC
+    # ===============================
+    if subtotal >= 1200:
+        delivery_fee = 0
+    else:
+        delivery_fee = 99
 
-    # 🔥 Create Razorpay Order AFTER total is calculated
+    total = subtotal + delivery_fee
+
+    # ===============================
+    # 💳 RAZORPAY ORDER
+    # ===============================
     razorpay_order = razorpay_client.order.create({
         "amount": int(total * 100),
         "currency": "INR",
@@ -891,6 +889,8 @@ def checkout():
     return render_template(
         "checkout.html",
         cart_items=cart_items,
+        subtotal=subtotal,          # ✅ ALWAYS EXISTS NOW
+        delivery_fee=delivery_fee,
         total=total,
         razorpay_order_id=razorpay_order_id,
         razorpay_key=os.getenv("RAZORPAY_KEY_ID"),
@@ -1387,16 +1387,18 @@ def admin_add_product():
         price = request.form.get("price")
         category = request.form.get("category")
         description = request.form.get("description")
+        actual_price = request.form.get("actual_price")
+        badge = request.form.get("badge")
 
         images = request.files.getlist("images")
 
         try:
             # 1️⃣ Insert product and get ID (PostgreSQL way)
             cursor.execute("""
-                INSERT INTO products (name, price, category, description)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO products (name, price, actual_price, category, description, badge)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING id
-            """, (name, price, category, description))
+            """, (name, price, actual_price, category, description, badge))
 
             product_id = cursor.fetchone()["id"]
 
