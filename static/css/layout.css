@@ -533,6 +533,44 @@ html {
   text-decoration: none;
 }
 
+.accordion-item {
+  border-bottom: 1px solid #eee;
+}
+
+.accordion-header {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Arrow */
+.accordion-header::after {
+  content: "+";
+  position: absolute;
+  right: 0;
+  font-size: 18px;
+}
+
+.accordion-item.active .accordion-header::after {
+  content: "-";
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.accordion-item.active .accordion-content {
+  max-height: 300px;
+}
+
 /* =========================
    USP / WHY QUALYJOYN
    ========================= */

@@ -115,58 +115,55 @@
       <!-- PRODUCT DETAILS (NOW INSIDE RIGHT COLUMN) -->
       <div class="product-info-section">
 
-        <hr class="product-divider">
-
-        <h4>Product Details</h4>
-
-        <strong>Fabric</strong>
-        <p>
-          240 GSM heavyweight French Terry (loop-knit)<br>
-          Super-combed 100% cotton for enhanced softness<br>
-          Bio-washed finish for a smooth, premium hand-feel<br>
-          Breathable structure with a rich, elevated drape
-        </p>
-
-        <strong>Construction</strong>
-        <p>
-          Precision-crafted with 11 SPI (stitches per inch) for durability<br>
-          Double-needle flatlock stitching on sleeves, shoulders & neckline<br>
-          Clean overlocked inner seams for long-lasting wear<br>
-          Designed to maintain structure even after multiple washes
-        </p>
-
-        <hr class="product-divider">
-
-        <h4>Fit & Sizing</h4>
-        <p>
-          Fit: Oversized streetwear silhouette<br>
-          Drop shoulder design for relaxed structure<br>
-          Model is 5’10 wearing size M<br>
-          For a regular fit, we recommend sizing down
-        </p>
-
-        <hr class="product-divider">
-
-        <h4>Care Instructions</h4>
-        <p>
-          Machine wash cold (inside out recommended)<br>
-          Do not bleach<br>
-          Do not tumble dry<br>
-          Iron inside out to preserve fabric finish<br>
-          Wash with similar colors
-        </p>
-
-        <hr class="product-divider">
-
-        <h4>Shipping & Returns</h4>
-        <p>
-          Dispatched within 6–8 business days<br>
-          Pan-India delivery available<br><br>
-          7-day easy exchange for size issues<br>
-          Item must be unused with original tags intact
-        </p>
+      <!-- FABRIC -->
+      <div class="accordion-item">
+        <button class="accordion-header">Fabric</button>
+        <div class="accordion-content">
+          <p>
+            240 GSM heavyweight French Terry (loop-knit)<br>
+            Super-combed 100% cotton<br>
+            Bio-washed for premium hand feel
+          </p>
+        </div>
       </div>
 
+      <!-- CONSTRUCTION -->
+      <div class="accordion-item">
+        <button class="accordion-header">Construction</button>
+        <div class="accordion-content">
+          <p>
+            11 SPI stitching<br>
+            Double-needle flatlock finish<br>
+            Clean overlocked interiors
+          </p>
+        </div>
+      </div>
+
+      <!-- FIT -->
+      <div class="accordion-item">
+        <button class="accordion-header">Fit & Sizing</button>
+        <div class="accordion-content">
+          <p>
+            Oversized fit<br>
+            Model is 5’10 wearing M<br>
+            Size down for regular fit
+          </p>
+        </div>
+      </div>
+
+      <!-- CARE -->
+      <div class="accordion-item">
+        <button class="accordion-header">Care Instructions</button>
+        <div class="accordion-content">
+          <p>
+            Machine wash cold<br>
+            Do not bleach<br>
+            Iron inside out
+          </p>
+        </div>
+      </div>
+
+    </div>
     </div>
 
   </div>
@@ -429,6 +426,13 @@ function changeImageByIndex(index) {
   showImage(currentIndex);
 }
 
+
+document.querySelectorAll(".accordion-header").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const item = btn.parentElement;
+    item.classList.toggle("active");
+  });
+});
 
 // MOBILE SWIPE
 let startX = 0;
