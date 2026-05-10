@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>AI Background Remover</title>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial;
+    }
+
+    body{
+      background:#0f172a;
+      color:white;
+      min-height:100vh;
+      padding:20px;
+    }
+
+    .container{
+      max-width:1200px;
+      margin:auto;
+    }
+
+    h1{
+      text-align:center;
+      color:#38bdf8;
+      margin-bottom:10px;
+      font-size:42px;
+    }
+
+    .subtitle{
+      text-align:center;
+      margin-bottom:30px;
+      color:#cbd5e1;
+    }
+
+    .upload-box{
+      background:#111827;
+      padding:30px;
+      border-radius:20px;
+      text-align:center;
+      border:2px dashed #38bdf8;
+      margin-bottom:30px;
+    }
+
+    input{
+      margin-top:20px;
+    }
+
+    button{
+      margin-top:20px;
+      background:#38bdf8;
+      border:none;
+      padding:14px 30px;
+      border-radius:10px;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+    }
+
+    #status{
+      margin-top:20px;
+      color:#facc15;
+      font-size:18px;
+    }
+
+    .images{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:25px;
+    }
+
+    .card{
+      background:#111827;
+      padding:20px;
+      border-radius:20px;
+    }
+
+    .card h2{
+      text-align:center;
+      margin-bottom:20px;
+      color:#38bdf8;
+    }
+
+    .preview{
+      min-height:500px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      border-radius:15px;
+      overflow:hidden;
+
+      background-image:
+      linear-gradient(45deg,#ccc 25%,transparent 25%),
+      linear-gradient(-45deg,#ccc 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#ccc 75%),
+      linear-gradient(-45deg,transparent 75%,#ccc 75%);
+
+      background-size:20px 20px;
+      background-position:0 0,0 10px,10px -10px,-10px 0px;
+    }
+
+    img{
+      max-width:100%;
+      max-height:500px;
+      object-fit:contain;
+    }
+
+    .download-btn{
+      width:100%;
+      background:#22c55e;
+      color:white;
+    }
+
+    @media(max-width:900px){
+
+      .images{
+        grid-template-columns:1fr;
+      }
+
+      h1{
+        font-size:32px;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>AI Background Remover</h1>
+
+  <p class="subtitle">
+    Professional AI Background Removal Tool
+  </p>
+
+  <div class="upload-box">
+
+    <h2>Select Image</h2>
+
+    <input type="file" id="file">
+
+    <br>
+
+    <button onclick="removeBg()">
+      Remove Background
+    </button>
+
+    <div id="status">
+      Waiting for image...
+    </div>
+
+  </div>
+
+  <div class="images">
+
+    <div class="card">
+
+      <h2>Original Image</h2>
+
+      <div class="preview">
+
+        <img id="originalImage">
+
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <h2>Background Removed</h2>
+
+      <div class="preview">
+
+        <img id="outputImage">
+
+      </div>
+
+      <a id="downloadBtn" download="transparent.png">
+
+        <button class="download-btn">
+          Download PNG
+        </button>
+
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+const fileInput = document.getElementById("file");
+
+fileInput.addEventListener("change", function(e){
+
+    const file = e.target.files[0];
+
+    if(file){
+
+        const url = URL.createObjectURL(file);
+
+        document.getElementById("originalImage").src = url;
+
+        document.getElementById("status").innerText =
+        "Image selected successfully";
+    }
+});
+
+async function removeBg(){
+
+    const file = fileInput.files[0];
+
+    if(!file){
+
+        alert("Please select image");
+
+        return;
+    }
+
+    document.getElementById("status").innerText =
+    "Removing background...";
+
+    const formData = new FormData();
+
+    formData.append("image", file);
+
+    try{
+
+        const response = await fetch(
+            "http://127.0.0.1:5000/remove-bg",
+            {
+                method:"POST",
+                body:formData
+            }
+        );
+
+        const blob = await response.blob();
+
+        const url = URL.createObjectURL(blob);
+
+        document.getElementById("outputImage").src = url;
+
+        document.getElementById("downloadBtn").href = url;
+
+        document.getElementById("status").innerText =
+        "Background removed successfully";
+
+    }
+    catch(error){
+
+        console.log(error);
+
+        document.getElementById("status").innerText =
+        "Error removing background";
+    }
+}
+
+</script>
+
+</body>
+
+</html>

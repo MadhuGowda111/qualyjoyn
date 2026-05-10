@@ -1426,10 +1426,15 @@ def admin_add_product():
             if not os.path.exists(product_folder):
                 os.makedirs(product_folder)
 
-            for image in images:
+            for index, image in enumerate(images):
+
                 if image.filename != "":
-                    filename = secure_filename(image.filename)
+
+                    extension = image.filename.rsplit(".", 1)[1].lower()
+                    filename = f"{index + 1}.{extension}"
+
                     image_path = os.path.join(product_folder, filename)
+
                     image.save(image_path)
 
                     cursor.execute("""
