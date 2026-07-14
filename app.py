@@ -1357,6 +1357,50 @@ def admin_products():
 
     return render_template("admin/products.html", products=products)
 
+@app.route("/admin/edit-product/<int:product_id>")
+@admin_required
+def admin_edit_product(product_id):
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Get product
+    cursor.execute("""
+        SELECT *
+        FROM products
+        WHERE id = %s
+    """, (product_id,))
+
+    product = cursor.fetchone()
+
+    if not product:
+        return "Product not found", 404
+
+    # Get categories
+    cursor.execute("""
+        SELECT *
+        FROM categories
+        ORDER BY name
+    """)
+
+    categories = cursor.fetchall()
+
+    # Get stock
+    cursor.execute("""
+        SELECT *
+        FROM product_sizes
+        WHERE product_id = %s
+    """, (product_id,))
+
+    sizes = cursor.fetchall()
+
+    return render_template(
+        "admin/edit_product.html",
+        product=product,
+        categories=categories,
+        sizes=sizes
+    )
+
 
 @app.route("/admin/delete-product/<int:product_id>")
 @admin_required

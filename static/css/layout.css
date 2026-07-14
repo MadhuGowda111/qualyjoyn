@@ -2182,6 +2182,23 @@ input.error {
   display: block;
 }
 
+/* ===== Manage product edit button ===== */
+.edit-btn{
+    display:inline-block;
+    padding:8px 16px;
+    background:#d4af37;
+    color:#fff;
+    text-decoration:none;
+    border-radius:6px;
+    margin-right:8px;
+    font-size:14px;
+    transition:.3s;
+}
+
+.edit-btn:hover{
+    background:#b89028;
+}
+
 @media (max-width: 600px) {
 
   .main-nav {
