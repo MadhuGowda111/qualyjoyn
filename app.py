@@ -1477,7 +1477,13 @@ def admin_order_detail(order_id):
     if not order:
         return "Order not found"
 
-    items = json.loads(order["items"]) if order["items"] else []
+    items = []
+
+    if order["items"]:
+        if isinstance(order["items"], str):
+            items = json.loads(order["items"])
+        else:
+            items = order["items"]
 
     return render_template(
         "admin/order_detail.html",
