@@ -40,7 +40,7 @@ def upload_product_image(product_id, image_file, display_order):
 
         supabase.storage.from_(BUCKET_NAME).upload(
             path=storage_path,
-            file=image_file.stream,
+            file=image_file.read(),
             file_options={
                 "content-type": image_file.content_type,
                 "upsert": "false"
