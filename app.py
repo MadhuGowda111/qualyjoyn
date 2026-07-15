@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from functools import wraps
-
+from supabase_storage import upload_product_image
 # ===============================
 # LOAD ENV VARIABLES
 # ===============================
@@ -1357,7 +1357,7 @@ def admin_products():
 
     return render_template("admin/products.html", products=products)
 
-@app.route("/admin/edit-product/<int:product_id>")
+@app.route("/admin/edit-product/<int:product_id>", methods=["GET", "POST"])
 @admin_required
 def admin_edit_product(product_id):
 
@@ -1458,33 +1458,27 @@ def admin_add_product():
                 """, (product_id, size, int(stock_value)))
 
             # -------- SAVE IMAGES --------
-            from werkzeug.utils import secure_filename
-
-            product_folder = os.path.join(
-                app.static_folder,
-                "images",
-                "products",
-                str(product_id)
-            )
-
-            if not os.path.exists(product_folder):
-                os.makedirs(product_folder)
 
             for index, image in enumerate(images):
 
-                if image.filename != "":
+                if image.filename == "":
+                    continue
 
-                    extension = image.filename.rsplit(".", 1)[1].lower()
-                    filename = f"{index + 1}.{extension}"
+                image_url = upload_product_image(
+                    product_id=product_id,
+                    image_file=image,
+                    display_order=index
+                )
 
-                    image_path = os.path.join(product_folder, filename)
-
-                    image.save(image_path)
-
-                    cursor.execute("""
-                        INSERT INTO product_images (product_id, image)
-                        VALUES (%s, %s)
-                    """, (product_id, filename))
+                cursor.execute("""
+                    INSERT INTO product_images
+                    (product_id, image_url, display_order)
+                    VALUES (%s, %s, %s)
+                """, (
+                    product_id,
+                    image_url,
+                    index + 1
+                ))
 
             conn.commit()
 
