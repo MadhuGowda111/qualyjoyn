@@ -25,7 +25,7 @@
         <img
           id="mainProductImage"
           data-images='{{ images | tojson | safe }}'
-          src="{{ url_for('static', filename='images/products/' ~ product.id ~ '/' ~ images[0]) }}"
+          src="{{ images[0] if images else url_for('static', filename='images/no-image.png') }}"
           alt="{{ product.name }}"
         >
 
@@ -37,8 +37,9 @@
         {% for img in images %}
         <img
           class="thumb"
-          src="{{ url_for('static', filename='images/products/' ~ product.id ~ '/' ~ img) }}"
+          src="{{ img }}"
           onclick="changeImageByIndex({{ loop.index0 }})"
+          alt="{{ product.name }}"
         >
         {% endfor %}
       </div>
@@ -186,7 +187,7 @@
         {% endif %}
 
         <img
-          src="{{ url_for('static', filename='images/products/' ~ item.id ~ '/' ~ item.image) }}"
+          src="{{ item.image if item.image else url_for('static', filename='images/placeholder.png') }}"
           alt="{{ item.name }}"
         >
 
@@ -407,7 +408,7 @@ let currentIndex = 0;
 
 function showImage(index) {
   if (!productImages.length) return;
-  imgEl.src = "/static/images/products/{{ product.id }}/" + productImages[index];
+  imgEl.src = productImages[index];
 }
 
 function nextImage() {

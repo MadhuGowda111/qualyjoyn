@@ -12,7 +12,7 @@
           <div class="cart-item">
 
             <img
-              src="{{ url_for('static', filename='images/products/' ~ item.product_id ~ '/' ~ item.image) }}"
+              src="{{ item.image }}"
               alt="{{ item.name }}"
               class="cart-image"
             >

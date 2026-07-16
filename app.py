@@ -153,20 +153,16 @@ def home():
         products = []
 
         for p in raw_products:
-            image_dir = os.path.join(
-                app.static_folder,
-                "images",
-                "products",
-                str(p["id"])
-            )
+            cursor.execute("""
+                SELECT image_url
+                FROM product_images
+                WHERE product_id = %s
+                ORDER BY display_order
+            """, (p["id"],))
 
-            images = []
+            image_rows = cursor.fetchall()
 
-            if os.path.exists(image_dir):
-                images = sorted([
-                    img for img in os.listdir(image_dir)
-                    if img.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
-                ])
+            images = [row["image_url"] for row in image_rows]
 
             products.append({
                 **p,
@@ -525,10 +521,13 @@ def product_detail(product_id):
     # Related products
     cursor.execute("""
         SELECT p.*,
-            (SELECT image 
-                FROM product_images 
-                WHERE product_id = p.id 
-                LIMIT 1) as image
+            (
+                SELECT image_url
+                FROM product_images
+                WHERE product_id = p.id
+                ORDER BY display_order
+                LIMIT 1
+            ) AS image
         FROM products p
         WHERE p.category = %s
         AND p.id != %s
@@ -555,20 +554,18 @@ def product_detail(product_id):
         for s in sizes_db
     ]
 
-    # Load images from folder
-    image_dir = os.path.join(
-        app.static_folder,
-        "images",
-        "products",
-        str(product["id"])
-    )
+    # -------- LOAD IMAGES FROM DATABASE --------
 
-    images = []
-    if os.path.exists(image_dir):
-        images = sorted([
-            img for img in os.listdir(image_dir)
-            if img.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
-        ])
+    cursor.execute("""
+        SELECT image_url
+        FROM product_images
+        WHERE product_id = %s
+        ORDER BY display_order
+    """, (product_id,))
+
+    image_rows = cursor.fetchall()
+
+    images = [row["image_url"] for row in image_rows]
 
     return render_template(
         "product.html",
@@ -577,6 +574,7 @@ def product_detail(product_id):
         images=images,
         related_products=related_products
     )
+
 @app.route("/add-to-cart", methods=["POST"])
 def add_to_cart():
 
@@ -718,19 +716,17 @@ def cart():
         subtotal = row["price"] * row["quantity"]
         total += subtotal
 
-        image_dir = os.path.join(
-            app.static_folder,
-            "images",
-            "products",
-            str(row["product_id"])
-        )
+        cursor.execute("""
+            SELECT image_url
+            FROM product_images
+            WHERE product_id = %s
+            ORDER BY display_order
+            LIMIT 1
+        """, (row["product_id"],))
 
-        images = []
-        if os.path.exists(image_dir):
-            images = sorted([
-                img for img in os.listdir(image_dir)
-                if img.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
-            ])
+        image_row = cursor.fetchone()
+
+        image = image_row["image_url"] if image_row else None
 
         cart_items.append({
             "key": row["id"],
@@ -740,7 +736,10 @@ def cart():
             "size": row["size"],
             "quantity": row["quantity"],
             "subtotal": subtotal,
-            "image": images[0] if images else "no-image.png"
+            "image": image if image else url_for(
+                "static",
+                filename="images/placeholder.png"
+            )
         })
 
 
@@ -749,6 +748,7 @@ def cart():
         cart_items=cart_items,
         total=total
     )
+
 @app.route("/remove-from-cart", methods=["POST"])
 def remove_from_cart():
 
@@ -841,19 +841,17 @@ def checkout():
             item_subtotal = row["price"] * row["quantity"]
             subtotal += item_subtotal
 
-            image_dir = os.path.join(
-                app.static_folder,
-                "images",
-                "products",
-                str(row["product_id"])
-            )
+            cursor.execute("""
+                SELECT image_url
+                FROM product_images
+                WHERE product_id = %s
+                ORDER BY display_order
+                LIMIT 1
+            """, (row["product_id"],))
 
-            images = []
-            if os.path.exists(image_dir):
-                images = sorted([
-                    img for img in os.listdir(image_dir)
-                    if img.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
-                ])
+            image_row = cursor.fetchone()
+
+            image = image_row["image_url"] if image_row else None
 
             cart_items.append({
                 "product_id": row["product_id"],
@@ -862,7 +860,7 @@ def checkout():
                 "size": row["size"],
                 "quantity": row["quantity"],
                 "subtotal": item_subtotal,
-                "image": images[0] if images else None
+                "image": image
             })
 
     # ===============================

@@ -10,7 +10,7 @@
 
     {% if product.images and product.images|length > 0 %}
       <img
-        src="{{ url_for('static', filename='images/products/' ~ product.id ~ '/' ~ product.images[0]) }}"
+        src="{{ product.images[0] }}"
         alt="{{ product.name }}"
         loading="lazy"
       >

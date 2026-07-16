@@ -47,11 +47,11 @@ body {
 .help-section{
     max-width: 900px;
     margin: auto;
-    padding: 60px 20px;
+    padding: 30px 20px;
 }
 
 .help-section h2{
-    margin-top: 35px;
+    margin-top: 15px;
     font-size: 22px;
     border-bottom: 2px solid #eee;
     padding-bottom: 8px;

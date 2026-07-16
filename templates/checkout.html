@@ -81,7 +81,7 @@
 
         <div class="summary-left">
           <img 
-            src="{{ url_for('static', filename='images/products/' ~ item.product_id ~ '/' ~ item.image) }}"
+            src="{{ item.image if item.image else url_for('static', filename='images/placeholder.png') }}"
             alt="{{ item.name }}"
           >
 
