@@ -1362,6 +1362,65 @@ def admin_edit_product(product_id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    if request.method == "POST":
+
+        name = request.form["name"]
+        actual_price = request.form["actual_price"]
+        price = request.form["price"]
+        category = request.form["category"]
+        description = request.form["description"]
+        badge = request.form["badge"]
+
+        stock_s = request.form["stock_S"]
+        stock_m = request.form["stock_M"]
+        stock_l = request.form["stock_L"]
+        stock_xl = request.form["stock_XL"]
+
+        cursor.execute("""
+            UPDATE products
+            SET
+                name=%s,
+                actual_price=%s,
+                price=%s,
+                category=%s,
+                description=%s,
+                badge=%s
+            WHERE id=%s
+        """, (
+            name,
+            actual_price,
+            price,
+            category,
+            description,
+            badge,
+            product_id
+        ))
+
+        stock_data = {
+            "S": stock_s,
+            "M": stock_m,
+            "L": stock_l,
+            "XL": stock_xl
+        }
+
+        for size, qty in stock_data.items():
+            cursor.execute("""
+                UPDATE product_sizes
+                SET stock=%s
+                WHERE product_id=%s
+                AND size=%s
+            """, (
+                qty,
+                product_id,
+                size
+            ))
+
+        conn.commit()
+
+        flash("Product updated successfully!", "success")
+
+        return redirect(url_for("admin_edit_product", product_id=product_id))
+
     # Get product
     cursor.execute("""
         SELECT *
