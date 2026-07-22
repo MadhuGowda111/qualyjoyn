@@ -9,8 +9,37 @@
 
     <form method="POST" enctype="multipart/form-data" class="admin-form">
       <div class="form-group">
-        <label>Product Image</label>
-        <input type="file" name="images" multiple accept="image/*" required>
+
+          <label>Current Images</label>
+
+          <div class="existing-images">
+
+              {% for image in images %}
+
+              <div class="existing-image">
+
+                  <img
+                      src="{{ image.image_url }}"
+                      alt="Product Image"
+                  >
+
+              </div>
+
+              {% endfor %}
+
+          </div>
+
+          <label style="margin-top:20px;">
+              Upload New Images
+          </label>
+
+          <input
+              type="file"
+              name="images"
+              multiple
+              accept="image/*"
+          >
+
       </div>
 
 
@@ -68,8 +97,11 @@
         <label>Category</label>
         <select name="category" required>
           {% for category in categories %}
-            <option value="{{ category.id }}">
-              {{ category.name }}
+            <option
+                value="{{ category.id }}"
+                {% if category.id == product.category %}selected{% endif %}
+            >
+                {{ category.name }}
             </option>
           {% endfor %}
         </select>
@@ -86,22 +118,42 @@
 
         <div class="stock-card">
           <span class="stock-size">S</span>
-          <input type="number" name="stock_S" min="0" value="0">
+          <input
+              type="number"
+              name="stock_S"
+              min="0"
+              value="{{ stock.get('S', 0) }}"
+          >
         </div>
 
         <div class="stock-card">
           <span class="stock-size">M</span>
-          <input type="number" name="stock_M" min="0" value="0">
+          <input
+              type="number"
+              name="stock_M"
+              min="0"
+              value="{{ stock.get('M', 0) }}"
+          >
         </div>
 
         <div class="stock-card">
           <span class="stock-size">L</span>
-          <input type="number" name="stock_L" min="0" value="0">
+          <input
+              type="number"
+              name="stock_L"
+              min="0"
+              value="{{ stock.get('L', 0) }}"
+          >
         </div>
 
         <div class="stock-card">
           <span class="stock-size">XL</span>
-          <input type="number" name="stock_XL" min="0" value="0">
+          <input
+              type="number"
+              name="stock_XL"
+              min="0"
+              value="{{ stock.get('XL', 0) }}"
+          >
         </div>
 
       </div>

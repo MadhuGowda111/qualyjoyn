@@ -70,8 +70,9 @@
 /* Mobile */
 @media (max-width: 600px){
   .product-grid {
-    grid-template-columns: 1fr;
-    padding: 70px 6%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 20px 12px;
   }
 }
 

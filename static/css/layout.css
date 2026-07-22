@@ -2199,6 +2199,21 @@ input.error {
     background:#b89028;
 }
 
+.existing-images{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+.existing-image img{
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border-radius:8px;
+    border:1px solid #ddd;
+}
+
 @media (max-width: 600px) {
 
   .main-nav {
