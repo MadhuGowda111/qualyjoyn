@@ -2182,12 +2182,6 @@ input.error {
   display: block;
 }
 
-.product-badge{
-    position:absolute;
-    bottom:12px;
-    left:12px;
-    top:auto;
-}
 
 /* ===== Manage product edit button ===== */
 .edit-btn{
@@ -2325,13 +2319,13 @@ input.error {
 
 @media (max-width: 768px) {
 
-    .product-badge {
-        top: 12px;
-        left: 12px;
-        padding: 5px 10px;
-        font-size: 11px;
-        border-radius: 6px;
+    .product-badge{
+        position:absolute;
+        bottom:12px;
+        left:12px;
+        top:auto;
     }
+
 
 }
 
