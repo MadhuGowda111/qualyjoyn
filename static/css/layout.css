@@ -2319,13 +2319,13 @@ input.error {
 
 @media (max-width: 768px) {
 
-    .product-badge{
-        position:absolute;
-        bottom:0px;
-        left:12px;
-        top:auto;
+    .product-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: auto;
+        bottom: auto;
     }
-
 
 }
 
