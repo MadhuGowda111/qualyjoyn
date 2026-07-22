@@ -1404,9 +1404,6 @@ def admin_edit_product(product_id):
 
     images = cursor.fetchall()
 
-    sizes = cursor.fetchall()
-    stock = {s["size"]: s["stock"] for s in sizes}
-
     return render_template(
         "admin/edit_product.html",
         product=product,
