@@ -1390,6 +1390,11 @@ def admin_edit_product(product_id):
         WHERE product_id = %s
     """, (product_id,))
 
+    sizes = cursor.fetchall()
+
+    stock = {s["size"]: s["stock"] for s in sizes}
+
+    # Get images
     cursor.execute("""
         SELECT id, image_url, display_order
         FROM product_images
@@ -1406,7 +1411,6 @@ def admin_edit_product(product_id):
         "admin/edit_product.html",
         product=product,
         categories=categories,
-        sizes=sizes,
         stock=stock,
         images=images
     )
