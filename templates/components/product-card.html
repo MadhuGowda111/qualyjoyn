@@ -2,10 +2,12 @@
 
   <div class="product-image" style="position: relative;">
 
-    {% if product.badge == "trending" %}
-      <span class="product-badge trending">
-        TRENDING
-      </span>
+    {% if product.badge %}
+
+    <span class="product-badge {{ product.badge }}">
+        {{ product.badge|upper }}
+    </span>
+
     {% endif %}
 
     {% if product.images and product.images|length > 0 %}

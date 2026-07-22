@@ -2285,6 +2285,10 @@ input.error {
     overflow: visible;   /* IMPORTANT */
   }
 
+  .pdp {
+    padding: 100px 16px 20px;
+  }
+
   .main-image img {
     width: 100%;
     height: auto;        /* IMPORTANT */
